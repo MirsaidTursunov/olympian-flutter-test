@@ -48,10 +48,12 @@ class GameViewModel with ChangeNotifier {
   int coinsByRound = 0;
 
   bool isFirstLevelComplete = false;
+  bool _saveLottieShow = true;
 
   //TODO: закомментированный код показа рекламы после 5 неверных попыток
   // bool get showWrongAnswerDialog => wrongAnswerCount >= maxWrongAnswerCount;
   bool get showWrongAnswerDialog => false;
+  bool get saveLottieShowValue => _saveLottieShow;
 
   GameViewModel() {
     _init();
@@ -76,6 +78,7 @@ class GameViewModel with ChangeNotifier {
 
     _cacheImages();
     _save();
+    _saveLottieShow = _db.getFirstLottieShow();
   }
 
   // Проверяет пройден ли уровень
@@ -625,6 +628,11 @@ class GameViewModel with ChangeNotifier {
 
   tapPlay() {
     _audio.playTap();
+  }
+
+  void saveLottieShow(){
+    _db.saveFirstLottieShow();
+    _saveLottieShow = false;
   }
 
   _save() {

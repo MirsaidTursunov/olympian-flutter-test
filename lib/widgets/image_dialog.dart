@@ -150,7 +150,10 @@ class _ImageDialogState extends State<ImageDialog> {
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(6),
                     gradient: const LinearGradient(
-                      colors: [Color.fromRGBO(222, 188, 132, 1), Color.fromRGBO(137, 106, 54, 1)],
+                      colors: [
+                        Color.fromRGBO(222, 188, 132, 1),
+                        Color.fromRGBO(137, 106, 54, 1)
+                      ],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     )),
@@ -158,7 +161,10 @@ class _ImageDialogState extends State<ImageDialog> {
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(4),
                       gradient: const LinearGradient(
-                        colors: [Color.fromRGBO(137, 106, 54, 1), Color.fromRGBO(255, 218, 164, 1)],
+                        colors: [
+                          Color.fromRGBO(137, 106, 54, 1),
+                          Color.fromRGBO(255, 218, 164, 1)
+                        ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                       )),
@@ -170,7 +176,9 @@ class _ImageDialogState extends State<ImageDialog> {
                       wrongAnswer();
                     },
                     onTap: wrongAnswer,
-                    style: widget.word.state == WordState.correct ? ThemeText.wordItemCorrect : ThemeText.wordItemInput,
+                    style: widget.word.state == WordState.correct
+                        ? ThemeText.wordItemCorrect
+                        : ThemeText.wordItemInput,
                     onSubmitted: (value) {
                       if (!widget.vm.checkWord(
                             word: widget.word,
@@ -186,6 +194,9 @@ class _ImageDialogState extends State<ImageDialog> {
                         Navigator.pop(context);
                         widget.vm.clearActiveWord();
                         widget.focusNode.unfocus();
+                      }
+                      if (widget.vm.saveLottieShowValue) {
+                        widget.vm.saveLottieShow();
                       }
                     },
                     decoration: const InputDecoration(

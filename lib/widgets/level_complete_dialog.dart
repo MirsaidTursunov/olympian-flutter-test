@@ -79,7 +79,7 @@ class _LevelCompleteDialogState extends State<LevelCompleteDialog> {
         showClose: false,
         child: SizedBox(
           width: 246,
-          height: vm.getAdvSettings() ? 396 : 500,
+          // height: vm.getAdvSettings() ? 396 : 500,
           child: Column(
             children: [
               const Text(

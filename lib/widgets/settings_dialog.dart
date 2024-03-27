@@ -58,7 +58,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
       child: DialogWrapper(
         child: SizedBox(
           width: 280,
-          height: 280,
+          // height: 280,
           child: Column(
             children: [
               const SizedBox(

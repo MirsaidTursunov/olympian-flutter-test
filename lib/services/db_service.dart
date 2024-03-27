@@ -179,4 +179,12 @@ class DbService {
   int getWrongAnswerCount() {
     return _box.get('wrongAnswerCount', defaultValue: 0);
   }
+
+  saveFirstLottieShow() {
+    _box.put('firstLearn', false);
+  }
+
+  bool getFirstLottieShow() {
+    return _box.get('firstLearn', defaultValue: true);
+  }
 }

@@ -1,4 +1,6 @@
 import 'dart:math';
+import 'package:lottie/lottie.dart';
+import '../widgets/image_dialog.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +12,8 @@ import '../widgets/score_bar.dart';
 import '../widgets/word_item.dart';
 import '../widgets/help_button.dart';
 import '../services/notification_service.dart';
+
+part 'mixin/area_screen_mixin.dart';
 
 class AreaScreen extends StatelessWidget {
   const AreaScreen({Key? key}) : super(key: key);
@@ -36,14 +40,16 @@ class AreaScreen extends StatelessWidget {
                   ? 'Открыть выбранное слово. Нельзя открыть последнее слово'
                   : 'Открыть выбранное слово. Выберете ячейку',
             ),
-            const SizedBox(height: 66,),
+            const SizedBox(
+              height: 66,
+            ),
           ],
         ),
         appBar: AppBar(
           automaticallyImplyLeading: false,
           elevation: 0,
           toolbarHeight: 76.0,
-          flexibleSpace: ScoreBar(
+          flexibleSpace: const ScoreBar(
             withPadding: true,
             showLevel: true,
             prevScreen: 'Level',
@@ -55,48 +61,29 @@ class AreaScreen extends StatelessWidget {
             FocusScope.of(context).requestFocus(FocusNode());
             vm.clearActiveWord();
           },
-          child: const _NestedScroll(),
+          child: const NestedScrollWidget(),
         ),
       ),
     );
   }
 }
 
-class _NestedScroll extends StatefulWidget {
-  const _NestedScroll({Key? key}) : super(key: key);
+class NestedScrollWidget extends StatefulWidget {
+  const NestedScrollWidget({Key? key}) : super(key: key);
 
   @override
   __NestedScrollState createState() => __NestedScrollState();
 }
 
-class __NestedScrollState extends State<_NestedScroll> {
-  final dataKey = GlobalKey();
-  late final ScrollController _scrollCtrl;
-  double widthOffset = 0.0;
-  double wordWidth = 160.0;
-  double itemHeight = 66.0;
-
-  @override
-  void initState() {
-    _scrollCtrl = ScrollController();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      final notifications = NotificationService();
-      notifications.init(context: context);
-    });
-    super.initState();
-  }
-
-  _ensureScroll(BuildContext ctx) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    ctx.read<GameViewModel>().scrollToWidget();
-  }
+class __NestedScrollState extends State<NestedScrollWidget> with AreaScreenMixin{
 
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<GameViewModel>();
     final groups = vm.groups;
+    final animVisible = (vm.getLevelIndex() == 1);
 
-    _ensureScroll(context);
+    ensureScroll(context);
     final advContainerWidth = MediaQuery.of(context).size.width - wordWidth;
 
     return NotificationListener<ScrollEndNotification>(
@@ -125,52 +112,88 @@ class __NestedScrollState extends State<_NestedScroll> {
                       constraints: BoxConstraints(
                         minHeight: MediaQuery.of(context).size.height - 70,
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      child: Stack(
                         children: [
-                          ...group.map((word) {
-                            final key =
-                                word == vm.scrollableWord ? dataKey : null;
-                            if (key != null) {
-                              vm.scrollKey = key;
-                            }
-                            final showEndLeaf =
-                                (widthOffset / wordWidth).floor() <= index;
-                            final showStartLeaf =
-                                (widthOffset / wordWidth).floor() == index;
-                            return AnimatedBuilder(
-                              animation: _scrollCtrl,
-                              builder: (context, child) {
-                                final page =
-                                    max((widthOffset / wordWidth).floor(), 0);
-                                final position = _recalculateOffset(
-                                  maxItems: groups[page].length,
-                                  depth: word.depth,
-                                );
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ...group.map((word) {
+                                final key =
+                                    word == vm.scrollableWord ? dataKey : null;
+                                if (key != null) {
+                                  vm.scrollKey = key;
+                                }
+                                final showEndLeaf =
+                                    (widthOffset / wordWidth).floor() <= index;
+                                final showStartLeaf =
+                                    (widthOffset / wordWidth).floor() == index;
+                                return AnimatedBuilder(
+                                  animation: _scrollCtrl,
+                                  builder: (context, child) {
+                                    final page = max(
+                                        (widthOffset / wordWidth).floor(), 0);
+                                    final position = _recalculateOffset(
+                                      maxItems: groups[page].length,
+                                      depth: word.depth,
+                                    );
 
-                                return AnimatedContainer(
-                                  width: wordWidth,
-                                  height: itemHeight,
-                                  duration: const Duration(milliseconds: 150),
-                                  margin: EdgeInsets.only(
-                                    right: 0,
-                                    top: position,
-                                    bottom: position,
+                                    return AnimatedContainer(
+                                      width: wordWidth,
+                                      height: itemHeight,
+                                      duration:
+                                          const Duration(milliseconds: 150),
+                                      margin: EdgeInsets.only(
+                                        right: 0,
+                                        top: position,
+                                        bottom: position,
+                                      ),
+                                      child: child,
+                                    );
+                                  },
+                                  child: WordItem(
+                                    key: key,
+                                    word: word,
+                                    showEndLeaf: showEndLeaf,
+                                    showStartLeaf: showStartLeaf,
                                   ),
-                                  child: child,
                                 );
-                              },
-                              child: WordItem(
-                                key: key,
-                                word: word,
-                                showEndLeaf: showEndLeaf,
-                                showStartLeaf: showStartLeaf,
+                              }).toList(),
+                              Container(
+                                height: 66,
                               ),
-                            );
-                          }).toList(),
-                          Container(
-                            height: 66,
+                            ],
                           ),
+                          if (animVisible &&
+                              (index == 0) &&
+                              vm.saveLottieShowValue)
+                            Positioned.fill(
+                              left: wordWidth / 5,
+                              bottom: itemHeight * 1.2,
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (context
+                                      .read<GameViewModel>()
+                                      .showWrongAnswerDialog) {
+                                    // wrongAnswer();
+                                    return;
+                                  }
+                                  FocusScope.of(context)
+                                      .requestFocus(FocusNode());
+                                  showDialog(
+                                    context: context,
+                                    barrierColor: Colors.black45,
+                                    builder: (ctx) => ImageDialog(
+                                      word: group.first,
+                                      vm: context.read<GameViewModel>(),
+                                    ),
+                                  );
+                                },
+                                child: Lottie.asset(
+                                  height: 1.8 * itemHeight,
+                                  'assets/lottie/Animation.json',
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     );
