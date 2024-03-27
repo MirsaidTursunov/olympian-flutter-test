@@ -188,9 +188,11 @@ class __NestedScrollState extends State<NestedScrollWidget> with AreaScreenMixin
                                     ),
                                   );
                                 },
-                                child: Lottie.asset(
-                                  height: 1.8 * itemHeight,
-                                  'assets/lottie/Animation.json',
+                                child: IgnorePointer(
+                                  child: Lottie.asset(
+                                    height: 1.8 * itemHeight,
+                                    'assets/lottie/Animation.json',
+                                  ),
                                 ),
                               ),
                             ),
